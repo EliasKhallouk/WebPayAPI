@@ -4,7 +4,7 @@
 - Elias KHALLOUK
 - Yoann LEHONG CHEFF SON
 - Rayan LONGHI
-- Mamadou
+- Mamadou Bah
 
 
 ## Description
