@@ -19,6 +19,7 @@ WebPayAPI est une application Web développée en Flask pour gérer le paiement 
 - **Python 3.6+**
 - **Flask 1.1+**
 - **SQLite3** (avec l'ORM Peewee)
+- **requests** (pour récupérer les produits depuis l'API externe)
 - **pytest & pytest-flask** (pour les tests unitaires)
 
 ## Structure du projet
@@ -27,8 +28,6 @@ WebPayAPI/
 ├── app/
 │   ├── __init__.py
 │   ├── routes.py
-│   ├── models.py
-│   ├── database.py
 ├── tests/
 ├── static/
 ├── templates/
@@ -54,7 +53,7 @@ venv\Scripts\activate  # (Windows)
 
 ### 3️⃣ Installer les dépendances
 ```bash
-pip install flask peewee pytest pytest-flask
+pip install flask peewee pytest pytest-flask requests
 ```
 
 ### 4️⃣ Initialiser la base de données
