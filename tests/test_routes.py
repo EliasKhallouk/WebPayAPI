@@ -22,7 +22,7 @@ def test_get_products(client):
 def test_create_order_success(client):
     order_data = {"product": {"id": 1, "quantity": 2}}
     response = client.post('/order', json=order_data, follow_redirects=True)
-    assert response.status_code == 200 or response.status_code == 302
+    assert response.status_code == 302
     data = response.get_json()
     assert "order" in data
     assert data["order"]["id"] == 1
@@ -41,20 +41,25 @@ def test_create_order_invalid_product(client):
     data = response.get_json()
     assert "errors" in data
 
-'''
-def test_get_order(client):
-    response = client.get('/order/1')
-    assert response.status_code in [200, 404]  # Order may or may not exist yet
+def test_get_order_success(client):
+    # Création d'une commande au préalable
+    order_data = {"product": {"id": 999, "quantity": 3}}
+    post_response = client.post('/order', json=order_data, follow_redirects=True)
+    assert post_response.status_code == 200
+    data = post_response.get_json()
+    assert "order" in data
+    order_id = data["order"]["id"]
 
-def test_update_order_success(client):
-    update_data = {"email": "test@example.com", "shipping_information": {"country": "Canada", "city": "Chicoutimi"}}
-    response = client.put('/order/1', json=update_data)
-    assert response.status_code in [200, 404]  # Order may not exist yet
+    # Récupération de la commande créée via GET /order/<order_id>
+    get_response = client.get(f"/order/{order_id}")
+    assert get_response.status_code == 200
+    order = get_response.get_json().get("order")
+    assert order["id"] == order_id
+    assert order["quantity"] == order_data["product"]["quantity"]
 
-def test_pay_order_missing_fields(client):
-    response = client.put('/order/1/pay', json={})
-    assert response.status_code == 422
+def test_get_order_not_found(client):
+    # Tentative de récupération d'une commande inexistante
+    response = client.get("/order/99999")
+    assert response.status_code == 404
     data = response.get_json()
     assert "errors" in data
-
-'''

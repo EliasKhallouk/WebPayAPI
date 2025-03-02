@@ -68,44 +68,16 @@ def create_order():
     cached_products.append(new_product)
     return redirect(url_for('main.get_order', order_id=product_id), code=302)
 
-'''
 @main.route('/order/<int:order_id>', methods=['GET'])
 def get_order(order_id):
-    """ Récupère une commande par son ID avec calcul des taxes et frais d'expédition """
-    order = next((o for o in cached_products if o["id"] == order_id), None)
+    order = next((item for item in cached_products if item.get('id') == order_id), None)
     if not order:
         return jsonify({"errors": {"order": {"code": "not-found", "name": "Commande introuvable"}}}), 404
-    
-    product = next((p for p in cached_products if p["id"] == order["id"]), None)
-    if not product:
-        return jsonify({"errors": {"product": {"code": "invalid-product", "name": "Le produit de cette commande n'existe plus"}}}), 422
-    
-    shipping_price = calculate_shipping(product["weight"] * order["quantity"])
-    tax_rate = calculate_tax(order.get("shipping_information", {}).get("province", "QC"))
-    
-    total_price = product["price"] * order["quantity"]
-    total_price_tax = total_price * (1 + tax_rate)
-    
-    response = {
-        "order": {
-            "id": order["id"],
-            "total_price": total_price,
-            "total_price_tax": round(total_price_tax, 2),
-            "email": order.get("email"),
-            "credit_card": order.get("credit_card", {}),
-            "shipping_information": order.get("shipping_information", {}),
-            "paid": order.get("paid", False),
-            "transaction": order.get("transaction", {}),
-            "product": order["product"],
-            "shipping_price": shipping_price
-        }
-    }
-    return jsonify(response), 200
+    return jsonify({"order": order})
 
 
 
-
-
+'''
 @main.route('/order/<int:order_id>', methods=['PUT'])
 def update_order(order_id):
     """ Met à jour une commande (ajout email et informations de livraison) """
