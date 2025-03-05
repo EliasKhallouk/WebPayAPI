@@ -9,13 +9,16 @@ main = Blueprint('main', __name__)
 PRODUCTS_API_URL = "http://dimensweb.uqac.ca/~jgnault/shops/products/"
 
 def calculate_shipping(total_weight):
-    """Calcule le coût d'expédition en fonction du poids total (en grammes)."""
+    """Calcule le coût d'expédition en fonction du poids total (en grammes)
+       et retourne le montant en cents.
+    """
     if total_weight <= 500:
-        return 5
+        return 500   # 5 dollars en cents
     elif total_weight <= 2000:
-        return 10
+        return 1000  # 10 dollars en cents
     else:
-        return 25
+        return 2500  # 25 dollars en cents
+
 
 def calculate_tax(province):
     """Retourne le taux de taxe selon la province."""
@@ -169,11 +172,23 @@ def update_order(order_id):
 def pay_order(order_id):
     """
     Gère le paiement d'une commande :
-      - Vérifie que les informations du client sont présentes.
+      - Vérifie que seules les informations de paiement sont fournies (sans shipping_information ni email).
+      - Vérifie que les informations du client sont présentes dans la commande (stockées précédemment).
       - Communique avec le service de paiement distant.
       - Met à jour l'état de la commande en cas de succès.
     """
     data = request.json
+
+    # Vérifie que seules les informations de paiement sont présentes dans le payload
+    # Si d'autres clés sont présentes, on renvoie une erreur.
+    if set(data.keys()) != {"credit_card"}:
+        return jsonify({"errors": {
+            "order": {
+                "code": "invalid-request",
+                "name": "Seules les informations de paiement (credit_card) doivent être fournies lors du paiement"
+            }
+        }}), 422
+
     if "credit_card" not in data:
         return jsonify({"errors": {
             "payment": {"code": "missing-fields", "name": "Les informations de paiement sont obligatoires"}
@@ -184,6 +199,7 @@ def pay_order(order_id):
     except Order.DoesNotExist:
         return jsonify({"errors": {"order": {"code": "not-found", "name": "Commande introuvable"}}}), 404
 
+    # Vérifie que les informations client sont présentes dans la commande (stockées précédemment)
     if not order.email or not order.shipping_country:
         return jsonify({"errors": {"order": {"code": "missing-fields",
                                              "name": "Les informations du client sont nécessaires avant le paiement"}}}), 422
@@ -225,3 +241,4 @@ def pay_order(order_id):
     order_data.pop("transaction_info", None)
 
     return jsonify({"order": order_data}), 200
+
