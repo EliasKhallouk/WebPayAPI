@@ -2,7 +2,7 @@
 
 ## Auteurs
 - Elias KHALLOUK
-- Yoann LEHONG CHEFF SON
+- Yoann LEHONG CHEFFSON
 - Rayan LONGHI
 - Mamadou Bah
 
