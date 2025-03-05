@@ -1,11 +1,11 @@
+
 # WebPayAPI
 
 ## Auteurs
 - Elias KHALLOUK
-- Yoann LEHONG CHEFF SON
+- Yoann LEHONG CHEFFSON
 - Rayan LONGHI
 - Mamadou Bah
-
 
 ## Description
 WebPayAPI est une application Web développée en Flask pour gérer le paiement de commandes en ligne via une API REST. Elle permet :
@@ -14,6 +14,8 @@ WebPayAPI est une application Web développée en Flask pour gérer le paiement 
 - La création de commandes avec un produit.
 - La gestion des informations client.
 - Le paiement sécurisé via un service distant.
+
+> **Note :** Les prix sont désormais stockés et manipulés en **cents**. Par exemple, un produit coûtant 28,10\$ est représenté par la valeur **2810**.
 
 ## Technologies utilisées
 - **Python 3.6+**
@@ -27,8 +29,11 @@ WebPayAPI est une application Web développée en Flask pour gérer le paiement 
 WebPayAPI/
 ├── app/
 │   ├── __init__.py
+│   ├── models.py
 │   ├── routes.py
 ├── tests/
+│   ├── conftest.py
+│   └── test_routes.py
 ├── static/
 ├── templates/
 ├── config.py
@@ -38,6 +43,7 @@ WebPayAPI/
 ```
 
 ## Installation
+
 ### 1️⃣ Cloner le dépôt
 ```bash
 git clone https://github.com/EliasKhallouk/WebPayAPI.git
@@ -48,7 +54,7 @@ cd WebPayAPI
 ```bash
 python -m venv venv
 source venv/bin/activate  # (Linux/macOS)
-venv\Scripts\activate  # (Windows)
+venv\Scriptsctivate      # (Windows)
 ```
 
 ### 3️⃣ Installer les dépendances
@@ -57,11 +63,15 @@ pip install flask peewee pytest pytest-flask requests
 ```
 
 ### 4️⃣ Initialiser la base de données
+La base de données se pré-initialise via une commande CLI personnalisée.  
+Exécutez :
 ```bash
 FLASK_DEBUG=True FLASK_APP=run.py flask init-db
 ```
+Cette commande crée les tables nécessaires dans la base de données.
 
 ## Utilisation
+
 ### Lancer l’application
 ```bash
 export FLASK_APP=run.py  # (Linux/macOS)
@@ -77,17 +87,10 @@ flask run
 L’application sera accessible sur [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
 ## API Endpoints
+
 ### 🔹 Récupérer les produits disponibles
 ```http
 GET /
-```
-Réponse :
-```json
-{
-    "products": [
-        {"id": 1, "name": "Brown eggs", "price": 28.1, "in_stock": true}
-    ]
-}
 ```
 
 ### 🔹 Créer une commande
@@ -95,13 +98,8 @@ Réponse :
 POST /order
 Content-Type: application/json
 {
-    "product": {"id": 123, "quantity": 2}
+    "product": {"id": 1, "quantity": 2}
 }
-```
-Réponse :
-```json
-302 Found
-Location: /order/<order_id>
 ```
 
 ### 🔹 Récupérer une commande
@@ -116,14 +114,22 @@ Content-Type: application/json
 {
     "order": {
         "email": "client@email.com",
-        "shipping_information": {"country": "Canada", "city": "Chicoutimi"}
+        "shipping_information": {
+            "country": "Canada",
+            "address": "123 Test St",
+            "postal_code": "G1A1A1",
+            "city": "Chicoutimi",
+            "province": "QC"
+        }
     }
 }
 ```
 
 ### 🔹 Payer une commande
+> **Attention :** Seules les informations de paiement (*credit_card*) doivent être fournies dans ce payload. Les informations client (email et shipping_information) doivent avoir été ajoutées au préalable via l'endpoint PUT /order/<order_id>.
+
 ```http
-PUT /order/<order_id>
+PUT /order/<order_id>/pay
 Content-Type: application/json
 {
     "credit_card": {
